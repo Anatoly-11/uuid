@@ -10,37 +10,26 @@
 #endif
 
 //---------------------------------------------------------------------------------------------------------------------------------
-#include <cstdint>
+//#include <cstdint>
 #include <string>
 //---------------------------------------------------------------------------------------------------------------------------------
 namespace MyUuid {
-  class UUID_DLL_API UUID final{
-  private:
-    uint64_t d[2];
+  //-------------------------------------------------------------------------------------------------------------------------------
+  class UUID;
+  //-------------------------------------------------------------------------------------------------------------------------------
+  class UUID_DLL_API IUUID {
   public:
-    ~UUID();
+    virtual UUID &operator --() noexcept = 0;
 
-    UUID(const UUID &uid) noexcept;
+    virtual UUID &operator ++() noexcept = 0;
 
-    UUID &operator =(const UUID &uid) noexcept;
-
-    UUID(UUID &&uid) noexcept;
-
-    UUID &operator =(UUID &&uid) noexcept;
-
-    UUID() noexcept;
-
-    UUID &operator --() noexcept;
-
-    UUID &operator ++() noexcept;
-
-    bool operator <(const UUID &uid) const noexcept;
+    virtual bool operator <(const UUID &uid) const noexcept = 0;
     
-    bool operator ==(const UUID &uid) const noexcept;
+    virtual bool operator ==(const UUID &uid) const noexcept = 0;
 
-    bool operator !=(const UUID &uid) const noexcept;
+    virtual bool operator !=(const UUID &uid) const noexcept = 0;
 
-    std::string toStr() const noexcept;
+    virtual std::string toStr() const noexcept = 0;
   };
 
   UUID_DLL_API size_t getNumberOfLostUUIDs() noexcept;
