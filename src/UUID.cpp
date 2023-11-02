@@ -1,5 +1,4 @@
 #include <UUID.h>
-#include <cstdint>
 #include <format>
 #include <vector>
 #include <mutex>
@@ -7,59 +6,61 @@
 using namespace std;
 //---------------------------------------------------------------------------------------------------------------------------------
 namespace MyUuid {
-  class UUID_DLL_API UUID : public IUUID {
-    uint64_t d[2];
-  public:
-    UUID() noexcept: d{0, 0} {
-    }
-
-    ~UUID() {
-    }
-
-    /*virtual UUID &operator =(const UUID &uid) noexcept override {
+  UUID::UUID() noexcept: d{0, 0} {
+  }
+  /*UUID(const UUID &uid) noexcept {
       d[0] = uid.d[0];
       d[1] = uid.d[1];
-      return *this;
-    };
+    }*/
 
-    virtual UUID &operator =(UUID &&uid) noexcept override{
-      d[0] = uid.d[0];
-      d[1] = uid.d[1];
-      return *this;
-    };*/
+  UUID::~UUID() noexcept {
+  }
 
-    virtual UUID &operator --() noexcept override {
-      // не нужна блокировка потому как Вы свой UUID редактируете
-      if(d[0] != ULLONG_MAX) --d[0];
-      else --d[1];
-      return *this;
-    }
-
-    virtual UUID &operator ++() noexcept override {
-      // не нужна блокировка потому как Вы свой UUID редактируете
-      if(d[0] != ULLONG_MAX) ++d[0];
-      else ++d[1];
-      return *this;
-    }
-
-    virtual bool operator <(const UUID &uid) const noexcept override {
-      return d[1] == uid.d[1] ? d[0] < uid.d[0] : d[1] < uid.d[1];
-    }
-
-    virtual bool operator ==(const UUID &uid) const noexcept override {
-      return d[1] == uid.d[1] && d[0] == uid.d[0];
-    }
-
-    virtual bool operator !=(const UUID &uid) const noexcept override {
-      return !(*this == uid);
-    }
-
-    virtual std::string toStr() const noexcept override {
-      return std::format("{:08X}-{:04X}-{:04X}-{:04X}-{:012X}", *((uint32_t *)d + 3), *((uint16_t *)d + 5), *((uint16_t *)d + 4),
-        (*d) >> 48, (*d) & 0xFFFFFFFFFFFF);
-    }
+  /*virtual UUID &operator =(const UUID &uid) noexcept override {
+    d[0] = uid.d[0];
+    d[1] = uid.d[1];
+    return *this;
   };
+
+  virtual UUID &operator =(UUID &&uid) noexcept override{
+    d[0] = uid.d[0];
+    d[1] = uid.d[1];
+    return *this;
+  };*/
+
+  UUID &UUID::operator--() noexcept {
+    // не нужна блокировка потому как Вы свой UUID редактируете
+    if(d[0] != ULLONG_MAX) --d[0];
+    else --d[1];
+    return *this;
+  }
+
+  UUID &UUID::operator++() noexcept {
+    // не нужна блокировка потому как Вы свой UUID редактируете
+    if(d[0] != ULLONG_MAX) ++d[0];
+    else ++d[1];
+    return *this;
+  }
+
+  bool UUID::operator<(const UUID &uid) const noexcept {
+    return d[1] == uid.d[1] ? d[0] < uid.d[0] : d[1] < uid.d[1];
+  }
+
+  bool UUID::operator==(const UUID &uid) const noexcept {
+    return d[1] == uid.d[1] && d[0] == uid.d[0];
+  }
+
+  bool UUID::operator !=(const UUID &uid) const noexcept {
+    return !(*this == uid);
+  }
+
+  std::string UUID::toStr() const noexcept {
+    return std::format("{:08X}-{:04X}-{:04X}-{:04X}-{:012X}", *((uint32_t *)d + 3), *((uint16_t *)d + 5), *((uint16_t *)d + 4),
+      (*d) >> 48, (*d) & 0xFFFFFFFFFFFF);
+  }
 }
+//---------------------------------------------------------------------------------------------------------------------------------
+//MyUuid::IUUID::~IUUID() noexcept {}
 //---------------------------------------------------------------------------------------------------------------------------------
 mutex mtx;
 //---------------------------------------------------------------------------------------------------------------------------------

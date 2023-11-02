@@ -1,6 +1,5 @@
 del /q distr\*.*
 copy headers\uuid.h  distr
-copy \uuid.h  distr
 copy x64\Debug\uuid.dll  distr
 copy x64\Debug\uuid.lib  distr
 
