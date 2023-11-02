@@ -75,12 +75,11 @@ static MyUuid::UUID max_uuid{};
 UUID_DLL_API void MyUuid::getUUID(MyUuid::UUID &uid) noexcept {
   lock_guard<mutex> grd(mtx);
   if(!lost.empty()) {
-    max_uuid = lost.back();
+    uid = lost.back();
     lost.pop_back();
   } else {
-    ++max_uuid;
+    uid = ++max_uuid;
   }
-  uid = max_uuid;
 }
 //---------------------------------------------------------------------------------------------------------------------------------
 UUID_DLL_API void MyUuid::releaseUUID(const MyUuid::UUID &uid) noexcept {
