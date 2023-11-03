@@ -39,7 +39,7 @@ namespace MyUuid {
       d[1] = 0;
       return;
     }
-    regex rx(R"([A-Fa-f0-9]{8})-([A-Fa-f0-9]{4})-([A-Fa-f0-9]{4})-([A-Fa-f0-9]{4})-([A-Fa-f0-9]{12})");
+    regex rx(R"(([A-Fa-f0-9]{8})-([A-Fa-f0-9]{4})-([A-Fa-f0-9]{4})-([A-Fa-f0-9]{4})-([A-Fa-f0-9]{12}))");
     if(!regex_search(str, rx)) {
       // Нулевая инициализация
       d[0] = 0;
