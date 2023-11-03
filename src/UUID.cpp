@@ -2,31 +2,38 @@
 #include <format>
 #include <vector>
 #include <mutex>
+#include <cstdint>
+#include <random>
+#include <chrono>
+#include <functional>
 //---------------------------------------------------------------------------------------------------------------------------------
 using namespace std;
+//---------------------------------------------------------------------------------------------------------------------------------
+mutex mtx;
 //---------------------------------------------------------------------------------------------------------------------------------
 namespace MyUuid {
   UUID::UUID() noexcept: d{0, 0} {
   }
-  /*UUID(const UUID &uid) noexcept {
-      d[0] = uid.d[0];
-      d[1] = uid.d[1];
-    }*/
 
   UUID::~UUID() noexcept {
   }
 
-  /*virtual UUID &operator =(const UUID &uid) noexcept override {
-    d[0] = uid.d[0];
-    d[1] = uid.d[1];
+  UUID &UUID::operator=(const void *_d) noexcept{
+    lock_guard<mutex> grd(mtx);
+    uint64_t v[2]{d[0], d[1]}; // Сохраняем предыдущее значение
+    try {
+      const uint64_t *dd = reinterpret_cast<const uint64_t*>(_d);
+      d[0] = dd[0];
+      d[1] = dd[1];
+    }
+    catch(...) { // Игнорируется исключение 
+      // Восстанавливаем возможно испорченое значение
+      d[0] = v[0];
+      d[1] = v[1];
+    }
     return *this;
   };
 
-  virtual UUID &operator =(UUID &&uid) noexcept override{
-    d[0] = uid.d[0];
-    d[1] = uid.d[1];
-    return *this;
-  };*/
 
   UUID &UUID::operator--() noexcept {
     // не нужна блокировка потому как Вы свой UUID редактируете
@@ -62,8 +69,6 @@ namespace MyUuid {
 //---------------------------------------------------------------------------------------------------------------------------------
 //MyUuid::IUUID::~IUUID() noexcept {}
 //---------------------------------------------------------------------------------------------------------------------------------
-mutex mtx;
-//---------------------------------------------------------------------------------------------------------------------------------
 static std::vector<MyUuid::UUID> lost;
 //---------------------------------------------------------------------------------------------------------------------------------
 UUID_DLL_API size_t MyUuid::getNumberOfLostUUIDs() noexcept {
@@ -82,11 +87,22 @@ UUID_DLL_API void MyUuid::getUUID(MyUuid::UUID &uid) noexcept {
   }
 }
 //---------------------------------------------------------------------------------------------------------------------------------
+UUID_DLL_API void MyUuid::getUUIDRnd(MyUuid::UUID &uid) noexcept {
+  lock_guard<mutex> grd(mtx);
+  static int count{};
+  mt19937_64 engine{random_device{}()};
+  uniform_int_distribution<uint64_t> distr{0, ULLONG_MAX};
+  count+=2;
+  if(count > 32) {
+    count %= 32;
+    engine.seed(chrono::system_clock::now().time_since_epoch().count() / 100ull);
+  }
+  uint64_t d[2]{std::bind(distr, engine)(), std::bind(distr, engine)()};
+  uid = d;
+}
+//---------------------------------------------------------------------------------------------------------------------------------
 UUID_DLL_API void MyUuid::releaseUUID(const MyUuid::UUID &uid) noexcept {
   lock_guard<mutex> grd(mtx);
-  if(uid == max_uuid)
-    --max_uuid;
-  else
-    lost.push_back(uid);
+  lost.push_back(uid);
 }
 //---------------------------------------------------------------------------------------------------------------------------------

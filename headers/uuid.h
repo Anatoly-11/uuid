@@ -1,8 +1,16 @@
 #pragma once
-#pragma once
 //---------------------------------------------------------------------------------------------------------------------------------
 #ifndef _UUID_H_
 #define _UUID_H_ 1.0
+//---------------------------------------------------------------------------------------------------------------------------------
+// Определятеся объект UUID. Это уникальное 16 байтовое число, которое известно как GUID. Все методы и функции потокобезопасны,
+// те могут использоваться в многопоточной среде. Алгоритм генерации инкрементальный со списком использованих UUID. Усли мы вызываем
+// функцию releaseUUID, то данный UUID заносится в этот список. В процессе генерации мы вначале выдаём UUID оттуда начиная
+// с последнего сохранённого там. Раземр свободных реализованных UUID можно получить функцией getNumberOfLostUUIDs. Сами UUID
+// являются упорядочеными. Поэтому допускают использование в таких контейнерах как set и map в качестве ключей для быстрого поиска.
+// Так же поддеживается инициализация произвольным массивом но в этом случае уникальность не гарантируется. Так же есть функция
+// getUUIDRnd для получения UUID сгенерированого генератором случайных чистел как обычно это сделано в генераторе GUID.
+// Кроме того есть метод toStr для получения строкового представления UUID как это принято в GUID
 //---------------------------------------------------------------------------------------------------------------------------------
 #ifdef UUID_EXPORTS
 #define UUID_DLL_API __declspec(dllexport)
@@ -21,24 +29,30 @@ namespace MyUuid {
     UUID() noexcept;
 
     ~UUID() noexcept;
+
+    UUID &operator=(const void *d) noexcept; // Этот оператор нужен для инициализации значения UUID произвольным массивом. 
+    // Его размер должен быть не менее 16 байт иначе инизиализации не произойдёт. Если больше, то используются первые 16 байт
+
+    UUID &operator--() noexcept;
+
+    UUID &operator++() noexcept;
+
+    bool operator<(const UUID &uid) const noexcept;
     
-    UUID &operator --() noexcept;
+    bool operator==(const UUID &uid) const noexcept;
 
-    UUID &operator ++() noexcept;
-
-    bool operator <(const UUID &uid) const noexcept;
-    
-    bool operator ==(const UUID &uid) const noexcept;
-
-    bool operator !=(const UUID &uid) const noexcept;
+    bool operator!=(const UUID &uid) const noexcept;
 
     std::string toStr() const noexcept;
-
   };
 
   UUID_DLL_API size_t getNumberOfLostUUIDs() noexcept;
 
   UUID_DLL_API void getUUID(UUID &uid) noexcept;
+
+  UUID_DLL_API void getUUIDRnd(UUID &uid) noexcept; // Эта функция для генерации UUID через генератор случайных чисел.
+  // Не рекомендуется к использованию так как не гарантирует уникальность UUID. Хотя вероятность совпадений оч маленькая,
+  // но не нулевая.
 
   UUID_DLL_API void releaseUUID(const UUID &uid) noexcept;
 }
