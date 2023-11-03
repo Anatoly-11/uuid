@@ -6,6 +6,7 @@
 #include <random>
 #include <chrono>
 #include <functional>
+#include <regex>
 //---------------------------------------------------------------------------------------------------------------------------------
 using namespace std;
 //---------------------------------------------------------------------------------------------------------------------------------
@@ -18,22 +19,39 @@ namespace MyUuid {
   UUID::~UUID() noexcept {
   }
 
-  UUID &UUID::operator=(const void *_d) noexcept{
+  UUID::UUID(const void *_d) noexcept {
     lock_guard<mutex> grd(mtx);
-    uint64_t v[2]{d[0], d[1]}; // Сохраняем предыдущее значение
     try {
-      const uint64_t *dd = reinterpret_cast<const uint64_t*>(_d);
+      const uint64_t *dd = reinterpret_cast<const uint64_t *>(_d);
       d[0] = dd[0];
       d[1] = dd[1];
+    } catch(...) { // Игнорируется исключение 
+      // Нулевая инициализация
+      d[0] = 0;
+      d[1] = 0;
     }
-    catch(...) { // Игнорируется исключение 
-      // Восстанавливаем возможно испорченое значение
-      d[0] = v[0];
-      d[1] = v[1];
-    }
-    return *this;
-  };
+  }
 
+  UUID::UUID(const std::string &str) noexcept {
+    if(str.empty()) {
+      // Нулевая инициализация
+      d[0] = 0;
+      d[1] = 0;
+      return;
+    }
+    regex rx(R"([A-Fa-f0-9]{8})-([A-Fa-f0-9]{4})-([A-Fa-f0-9]{4})-([A-Fa-f0-9]{4})-([A-Fa-f0-9]{12})");
+    if(!regex_search(str, rx)) {
+      // Нулевая инициализация
+      d[0] = 0;
+      d[1] = 0;
+      return;
+    }
+    string ss = regex_replace(str, regex("(-)"), "");
+    d[0] = strtoull(ss.substr(0, 16).c_str(), nullptr, 16);
+    d[1] = strtoull(ss.substr(16).c_str(), nullptr, 16);
+  }
+
+  UUID::UUID(const char *str) noexcept : UUID(string(str != nullptr ? str : "")){}
 
   UUID &UUID::operator--() noexcept {
     // не нужна блокировка потому как Вы свой UUID редактируете
@@ -88,7 +106,7 @@ UUID_DLL_API void MyUuid::getUUID(MyUuid::UUID &uid) noexcept {
 }
 //---------------------------------------------------------------------------------------------------------------------------------
 UUID_DLL_API void MyUuid::getUUIDRnd(MyUuid::UUID &uid) noexcept {
-  lock_guard<mutex> grd(mtx);
+  unique_lock<mutex> grd(mtx);
   static int count{};
   mt19937_64 engine{random_device{}()};
   uniform_int_distribution<uint64_t> distr{0, ULLONG_MAX};
@@ -98,6 +116,7 @@ UUID_DLL_API void MyUuid::getUUIDRnd(MyUuid::UUID &uid) noexcept {
     engine.seed(chrono::system_clock::now().time_since_epoch().count() / 100ull);
   }
   uint64_t d[2]{std::bind(distr, engine)(), std::bind(distr, engine)()};
+  grd.unlock();
   uid = d;
 }
 //---------------------------------------------------------------------------------------------------------------------------------
