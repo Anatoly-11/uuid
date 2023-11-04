@@ -6,8 +6,7 @@
 using namespace std;
 //---------------------------------------------------------------------------------------------------------------------------------
 TEST(TestCaseName, TestName) {
-  MyUuid::UUID uid;
-  MyUuid::getUUID(uid);
+  MyUuid::UUID uid = MyUuid::getUUID();
   std::cout << uid.toStr() << std::endl;
   MyUuid::releaseUUID(uid);
   SUCCEED();
@@ -51,7 +50,7 @@ TEST(UUIDTestDisplay, uuid1) { // Этот тест должен стоять на превом месте иначе 
     "00000000-0000-0000-0000-000000000060", "00000000-0000-0000-0000-000000000061", "00000000-0000-0000-0000-000000000062",
     "00000000-0000-0000-0000-000000000063", "00000000-0000-0000-0000-000000000064"};
   for(size_t i = 0; i < SIZE; i++) {
-    MyUuid::getUUID(uid[i]);
+    uid[i] = MyUuid::getUUID();
   }
   for(size_t i = 0; i < SIZE; i++) {
     ASSERT_STREQ(uid[i].toStr().c_str(), uuidStr[i]);
@@ -65,7 +64,7 @@ TEST(UUIDTestCreateRelease, uuid2) {
   constexpr size_t SIZE = 100;
   MyUuid::UUID uid[100], uidZerro;
   for(size_t i = 0; i < SIZE; i++) {
-    MyUuid::getUUID(uid[i]);
+    uid[i] = MyUuid::getUUID();
   }
   for(size_t i = 0; i < SIZE; i++) {
     ASSERT_FALSE(uid[i] == uidZerro);
@@ -81,7 +80,7 @@ TEST(UUIDTestOrder, uuid3) { // Используется контейнер set, который вставляет
   constexpr size_t SIZE = 100;
   MyUuid::UUID uid[SIZE];
   for(size_t i = 0; i < SIZE; ++i) {
-    MyUuid::getUUID(uid[i]);
+    uid[i] = MyUuid::getUUID();
   }
   set<MyUuid::UUID> dt(begin(uid), end(uid));
   ASSERT_EQ(dt.size(), SIZE);

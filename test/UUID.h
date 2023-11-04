@@ -58,9 +58,9 @@ namespace MyUuid {
 
   UUID_DLL_API size_t getNumberOfLostUUIDs() noexcept;
 
-  UUID_DLL_API void getUUID(UUID &uid) noexcept;
+  UUID_DLL_API UUID getUUID() noexcept;
 
-  UUID_DLL_API void getUUIDRnd(UUID &uid) noexcept; // Ёта функци€ дл€ генерации UUID через генератор случайных чисел.
+  UUID_DLL_API UUID getUUIDRnd() noexcept; // Ёта функци€ дл€ генерации UUID через генератор случайных чисел.
   // Ќе рекомендуетс€ к использованию так как не гарантирует уникальность UUID. ’от€ веро€тность совпадений оч маленька€,
   // но не нулева€.
 

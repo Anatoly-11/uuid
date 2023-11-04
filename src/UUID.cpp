@@ -95,17 +95,19 @@ UUID_DLL_API size_t MyUuid::getNumberOfLostUUIDs() noexcept {
 //---------------------------------------------------------------------------------------------------------------------------------
 static MyUuid::UUID max_uuid{};
 //---------------------------------------------------------------------------------------------------------------------------------
-UUID_DLL_API void MyUuid::getUUID(MyUuid::UUID &uid) noexcept {
+UUID_DLL_API MyUuid::UUID MyUuid::getUUID() noexcept {
   lock_guard<mutex> grd(mtx);
+  MyUuid::UUID uid;
   if(!lost.empty()) {
     uid = lost.back();
     lost.pop_back();
   } else {
     uid = ++max_uuid;
   }
+  return uid;
 }
 //---------------------------------------------------------------------------------------------------------------------------------
-UUID_DLL_API void MyUuid::getUUIDRnd(MyUuid::UUID &uid) noexcept {
+UUID_DLL_API MyUuid::UUID MyUuid::getUUIDRnd() noexcept {
   unique_lock<mutex> grd(mtx);
   static int count{};
   mt19937_64 engine{random_device{}()};
@@ -117,7 +119,7 @@ UUID_DLL_API void MyUuid::getUUIDRnd(MyUuid::UUID &uid) noexcept {
   }
   uint64_t d[2]{std::bind(distr, engine)(), std::bind(distr, engine)()};
   grd.unlock();
-  uid = d;
+  return MyUuid::UUID(d);
 }
 //---------------------------------------------------------------------------------------------------------------------------------
 UUID_DLL_API void MyUuid::releaseUUID(const MyUuid::UUID &uid) noexcept {
